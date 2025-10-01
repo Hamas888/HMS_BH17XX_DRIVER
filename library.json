@@ -1,0 +1,62 @@
+{
+  "name": "HMS_BH17XX_DRIVER",
+  "version": "1.0.0",
+  "description": "This Package Provide  BH17XX Light Sensor Driver Library for Cross Platform (ARDUINO/STM/ESP/nRF)",
+  "keywords": [
+    "BH17XX",
+    "Light Sensor",
+    "Lux Sensor",
+    "BH1750",
+    "BH1751",
+    "BH1721",
+    "I2C",
+    "ESP32",
+    "ESP8266",
+    "STM32",
+    "nRF52",
+    "Arduino",
+    "Feedback"
+  ],
+  "authors": [
+    {
+      "name": "Hamas Saeed",
+      "email": "hamasaeed888@gmail.com",
+      "url": "https://github.com/Hamas888",
+      "maintainer": true
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Hamas888/HMS_BH17XX_DRIVER.git"
+  },
+  "frameworks": ["arduino", "espidf"],
+  "platforms": ["espressif32"],
+  "build": {
+    "flags": [
+      "-std=gnu++17"
+    ],
+    "unflags": [
+      "-std=gnu++11"
+    ]
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/Hamas888/HMS_BH17XX_DRIVER",
+  "examples": [
+    "examples"
+  ],
+  "export": {
+    "include": [
+      "include",
+      "src",
+      "examples",
+      "library.json",
+      "LICENSE",
+      "README.md"
+    ],
+    "exclude": [
+      "test",
+      ".pio",
+      ".vscode"
+    ]
+  }
+}

@@ -1,0 +1,3 @@
+version: 1.0.0
+description: "A BH17XX Driver Library for ESP-IDF"
+url: "https://github.com/Hamas888/HMS_BH17XX_DRIVER"
