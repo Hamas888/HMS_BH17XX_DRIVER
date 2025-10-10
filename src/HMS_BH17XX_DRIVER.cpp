@@ -17,6 +17,7 @@ HMS_BH17XX::~HMS_BH17XX(){
 #elif defined(HMS_BH17XX_PLATFORM_ZEPHYR)
         //here is the begin function for zephyr 
 #elif defined(HMS_BH17XX_PLATFORM_STM32_HAL)
+
     HMS_BH17XX_StatusTypeDef HMS_BH17XX::begin(I2C_HandleTypeDef *hi2c, uint8_t addr, HMS_BH17XX_SensorType sensorType, HMS_BH17XX_Mode mode){
         if (hi2c == NULL){
             #ifdef HMS_BH17XX_LOGGER_ENABLED
@@ -71,13 +72,13 @@ HMS_BH17XX_StatusTypeDef HMS_BH17XX::init() {
     if(sendCommand(powerOnCommand) != HMS_BH17XX_OK){
         return HMS_BH17XX_ERROR;
     }
-    mpuDelay(200);
+    bh17Delay(200);
     if(writeMTReg(120) != HMS_BH17XX_OK){
         return HMS_BH17XX_ERROR;
     }
     mpuDelay(200);
     if(sendCommand(measurementCommand) == HMS_BH17XX_OK){     // here mode is set by the defaultvalues function
-        mpuDelay(200);
+        bh17Delay(200);
         readLightLevel();
     }
     return HMS_BH17XX_OK;
@@ -107,7 +108,7 @@ float HMS_BH17XX::readLightLevel()
 }
 #endif
 
-void HMS_BH17XX::mpuDelay(uint32_t ms) {
+void HMS_BH17XX::bh17Delay(uint32_t ms) {
     #if defined(HMS_BH17XX_PLATFORM_ARDUINO)
         delay(ms);
     #elif defined(HMS_BH17XX_PLATFORM_ESP_IDF)
@@ -157,7 +158,7 @@ void HMS_BH17XX::setDefaultValues(){
             break;
     }
     powerDownCommand = HMS_BH17XX_CMD_POWER_DOWN;
-        powerOnCommand = HMS_BH17XX_CMD_POWER_ON;
+    powerOnCommand   = HMS_BH17XX_CMD_POWER_ON;
 }
 void HMS_BH17XX::setMode(HMS_BH17XX_Mode mode){
     measurementMode = mode;
@@ -165,7 +166,7 @@ void HMS_BH17XX::setMode(HMS_BH17XX_Mode mode){
 
 void HMS_BH17XX::sendOneTimeLowResolution(){
     if (sendCommand(HMS_BH17XX_CMD_ONE_TIME_L_RES_MODE) == HMS_BH17XX_OK){
-        mpuDelay(200);
+        bh17Delay(200);
     }else{
         #ifdef HMS_BH17XX_DEBUG_ENABLED
             bh17xxLogger.error("Failed to send one time low resolution command");
@@ -174,7 +175,7 @@ void HMS_BH17XX::sendOneTimeLowResolution(){
 }
 void HMS_BH17XX::sendOneTimeHighResolution(){
     if (sendCommand(HMS_BH17XX_CMD_ONE_TIME_H_RES_MODE) == HMS_BH17XX_OK){
-        mpuDelay(200);
+        bh17Delay(200);
     }else{
         #ifdef HMS_BH17XX_DEBUG_ENABLED
             bh17xxLogger.error("Failed to send one time high resolution command");
@@ -183,7 +184,7 @@ void HMS_BH17XX::sendOneTimeHighResolution(){
 }
 void HMS_BH17XX::sendOneTimeHighResolution2(){
     if (sendCommand(HMS_BH17XX_CMD_ONE_TIME_H_RES_MODE2) == HMS_BH17XX_OK){
-        mpuDelay(200);
+        bh17Delay(200);
     }else{
         #ifdef HMS_BH17XX_DEBUG_ENABLED
             bh17xxLogger.error("Failed to send one time high resolution 2 command");
@@ -192,7 +193,7 @@ void HMS_BH17XX::sendOneTimeHighResolution2(){
 }
 void HMS_BH17XX::sendContinuousLowResolution(){
     if(sendCommand(HMS_BH17XX_CMD_CONT_L_RES_MODE) == HMS_BH17XX_OK){
-        mpuDelay(200);
+        bh17Delay(200);
     }else{
         #ifdef HMS_BH17XX_DEBUG_ENABLED
             bh17xxLogger.error("Failed to send continuous low resolution command");
@@ -201,7 +202,7 @@ void HMS_BH17XX::sendContinuousLowResolution(){
 }
 void HMS_BH17XX::sendContinuousHighResolution(){
     if(sendCommand(HMS_BH17XX_CMD_CONT_H_RES_MODE) == HMS_BH17XX_OK){
-        mpuDelay(200);
+        bh17Delay(200);
     }else{
         #ifdef HMS_BH17XX_DEBUG_ENABLED
             bh17xxLogger.error("Failed to send continuous high resolution command");
@@ -210,7 +211,7 @@ void HMS_BH17XX::sendContinuousHighResolution(){
 }
 void HMS_BH17XX::sendContinuousHighResolution2(){
     if(sendCommand(HMS_BH17XX_CMD_CONT_H_RES_MODE2) == HMS_BH17XX_OK){
-        mpuDelay(200);
+        bh17Delay(200);
     }else{
         #ifdef HMS_BH17XX_DEBUG_ENABLED
             bh17xxLogger.error("Failed to send continuous high resolution 2 command");
@@ -219,7 +220,7 @@ void HMS_BH17XX::sendContinuousHighResolution2(){
 }
 void HMS_BH17XX::sendPowerDown(){
     if(sendCommand(powerDownCommand) == HMS_BH17XX_OK){
-        mpuDelay(200);
+        bh17Delay(200);
     }else{
         #ifdef HMS_BH17XX_DEBUG_ENABLED
             bh17xxLogger.error("Failed to send power down command");
@@ -228,7 +229,7 @@ void HMS_BH17XX::sendPowerDown(){
 }
 void HMS_BH17XX::sendPowerOn(){
     if(sendCommand(powerOnCommand) == HMS_BH17XX_OK){
-        mpuDelay(200);
+        bh17Delay(200);
     }else{
         #ifdef HMS_BH17XX_DEBUG_ENABLED
             bh17xxLogger.error("Failed to send power on command");
@@ -255,7 +256,7 @@ HMS_BH17XX_StatusTypeDef  HMS_BH17XX::writeMTReg(uint8_t MTreg){
         #endif
         return HMS_BH17XX_ERROR;
     }
-    mpuDelay(10); // Short delay between commands
+    bh17Delay(10); // Short delay between commands
 
     if (sendCommand(lowBitCommand) != HMS_BH17XX_OK) {
         #ifdef HMS_BH17XX_DEBUG_ENABLED
@@ -263,7 +264,7 @@ HMS_BH17XX_StatusTypeDef  HMS_BH17XX::writeMTReg(uint8_t MTreg){
         #endif
         return HMS_BH17XX_ERROR;
     }
-    mpuDelay(10); // Short delay after commands
+    bh17Delay(10); // Short delay after commands
 
     #ifdef HMS_BH17XX_DEBUG_ENABLED
         bh17xxLogger.debug("MTreg set to %d", MTreg);
@@ -272,7 +273,7 @@ HMS_BH17XX_StatusTypeDef  HMS_BH17XX::writeMTReg(uint8_t MTreg){
 }
 void HMS_BH17XX::reset(){
     if(sendCommand(HMS_BH17XX_CMD_RESET) == HMS_BH17XX_OK){
-        mpuDelay(200);
+        bh17Delay(200);
     }else{
         #ifdef HMS_BH17XX_DEBUG_ENABLED
             bh17xxLogger.error("Failed to send reset command");

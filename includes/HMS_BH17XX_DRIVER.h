@@ -3,7 +3,7 @@
  * File:        HMS_BH17XX_DRIVER.h
  * Author:      Hamas Saeed
  * Version:     Rev_1.0.0
- * Date:        Sep 30 2025
+ * Date:        Oct 10 2025
  * Brief:       This Package Provide BH17XX Driver Library for Cross Platform (STM/ESP/nRF)
  * 
  ====================================================================================================
@@ -101,7 +101,7 @@ class HMS_BH17XX {
         #elif defined(HMS_BH17XX_PLATFORM_ZEPHYR)
             //here is the begin function for zephyr 
         #elif defined(HMS_BH17XX_PLATFORM_STM32_HAL)
-             HMS_BH17XX_StatusTypeDef begin(I2C_HandleTypeDef *hi2c = NULL, uint8_t addr = HMS_BH17XX_DEVICE_ADDRESS,HMS_BH17XX_SensorType sensorType = HMS_BH17XX_SENSOR_BH1750, HMS_BH17XX_Mode mode = UNCONFIGURED);
+             HMS_BH17XX_StatusTypeDef begin(I2C_HandleTypeDef *hi2c = NULL, uint8_t addr = HMS_BH17XX_DEVICE_ADDRESS,HMS_BH17XX_SensorType sensorType = HMS_BH17XX_SENSOR_BH1750, HMS_BH17XX_Mode mode = CONTINUOUS_HIGH_RES_MODE_2);
         #endif
 
   float                               readLightLevel();
@@ -151,7 +151,7 @@ private:
   
   HMS_BH17XX_StatusTypeDef init();
   void                     setDefaultValues();
-  void                     mpuDelay(uint32_t ms);
+  void                     bh17Delay(uint32_t ms);
 };
 
 
