@@ -3,7 +3,7 @@
  * File:        HMS_BH17XX_DRIVER.h
  * Author:      Hamas Saeed
  * Version:     Rev_1.0.0
- * Date:        Sep 30 2025
+ * Date:        Oct 10 2025
  * Brief:       This Package Provide BH17XX Driver Library for Cross Platform (STM/ESP/nRF)
  * 
  ====================================================================================================
@@ -44,10 +44,7 @@
   #define HMS_BH17XX_PLATFORM_ESP_IDF
 #elif defined(__ZEPHYR__)
   #define HMS_BH17XX_PLATFORM_ZEPHYR
-#elif defined(STM32F0) || defined(STM32F1) || defined(STM32F3) || defined(STM32F4) || \
-      defined(STM32F7) || defined(STM32G0) || defined(STM32G4) || defined(STM32H7) || \
-      defined(STM32L0) || defined(STM32L1) || defined(STM32L4) || defined(STM32L5) || \
-      defined(STM32WB) || defined(STM32WL)
+#elif defined(__STM32__)
   #define HMS_BH17XX_PLATFORM_STM32_HAL
 #endif
 
@@ -62,9 +59,11 @@
 #elif defined(HMS_BH17XX_PLATFORM_STM32_HAL)
   #include "main.h"
 #endif
+#include   "HMS_BH17XX_Config.h"
 
-#endif // HMS_BH17XX_DRIVER_H
-
+#if defined(HMS_BH17XX_DEBUG_ENABLED) && (HMS_BH17XX_DEBUG_ENABLED == 1)
+    #define HMS_BH17XX_LOGGER_ENABLED
+#endif
 typedef enum {
     HMS_BH17XX_OK       = 0x00,
     HMS_BH17XX_ERROR    = 0x01,
@@ -73,39 +72,87 @@ typedef enum {
     HMS_BH17XX_NOT_FOUND= 0x04
 } HMS_BH17XX_StatusTypeDef;
 
-typedef enum Mode {
-    UNCONFIGURED                = 0,            // same as Power Down  
-    CONTINUOUS_HIGH_RES_MODE    = 0x10,         // Measurement at 1 lux resolution. Measurement time is approx 120ms.
-    CONTINUOUS_HIGH_RES_MODE_2  = 0x11,         // Measurement at 0.5 lux resolution. Measurement time is approx 120ms.
-    CONTINUOUS_LOW_RES_MODE     = 0x13,         // Measurement at 4 lux resolution. Measurement time is approx 16ms.
-    ONE_TIME_HIGH_RES_MODE      = 0x20,         // Measurement at 1 lux resolution. Measurement time is approx 120ms.
-    ONE_TIME_HIGH_RES_MODE_2    = 0x21,         // Measurement at 0.5 lux resolution. Measurement time is approx 120ms.
-    ONE_TIME_LOW_RES_MODE       = 0x23          // Measurement at 4 lux resolution. Measurement time is approx 16ms.
+typedef enum {
+    HMS_BH17XX_SENSOR_BH1750,
+    HMS_BH17XX_SENSOR_BH1721,
+    HMS_BH17XX_SENSOR_BH1715
+} HMS_BH17XX_SensorType;
+
+typedef enum {
+    UNCONFIGURED  = 0,                  // same as Power Down  
+    CONTINUOUS_HIGH_RES_MODE,          // Measurement at 1 lux resolution. Measurement time is approx 120ms.
+    CONTINUOUS_HIGH_RES_MODE_2,       // Measurement at 0.5 lux resolution. Measurement time is approx 120ms.
+    CONTINUOUS_LOW_RES_MODE,         // Measurement at 4 lux resolution. Measurement time is approx 16ms.
+    ONE_TIME_HIGH_RES_MODE,         // Measurement at 1 lux resolution. Measurement time is approx 120ms.
+    ONE_TIME_HIGH_RES_MODE_2,      // Measurement at 0.5 lux resolution. Measurement time is approx 120ms.
+    ONE_TIME_LOW_RES_MODE         // Measurement at 4 lux resolution. Measurement time is approx 16ms.
 } HMS_BH17XX_Mode;
 
 
 
 class HMS_BH17XX {
     public:
-        HMS_BH17XX(byte addr = 0x23);
-  bool begin(
-    Mode mode = CONTINUOUS_HIGH_RES_MODE, byte addr = 0x23,
-    TwoWire* i2c = nullptr);
-  bool configure(Mode mode);
-  bool setMTreg(byte MTreg);
-  bool measurementReady(bool maxWait = false);
-  float readLightLevel();
+        HMS_BH17XX();
+        ~HMS_BH17XX();
+        #if defined(HMS_BH17XX_PLATFORM_ARDUINO)
+            //here is the begin function for arduino
+        #elif defined(HMS_BH17XX_PLATFORM_ESP_IDF)
+            //here is the begin function for esp-idf
+        #elif defined(HMS_BH17XX_PLATFORM_ZEPHYR)
+            //here is the begin function for zephyr 
+        #elif defined(HMS_BH17XX_PLATFORM_STM32_HAL)
+             HMS_BH17XX_StatusTypeDef begin(I2C_HandleTypeDef *hi2c = NULL, uint8_t addr = HMS_BH17XX_DEVICE_ADDRESS,HMS_BH17XX_SensorType sensorType = HMS_BH17XX_SENSOR_BH1750, HMS_BH17XX_Mode mode = CONTINUOUS_HIGH_RES_MODE_2);
+        #endif
 
+  float                               readLightLevel();
+  HMS_BH17XX_StatusTypeDef            sendCommand(uint8_t command);
+  void                                setMode(HMS_BH17XX_Mode mode);
+  void                                sendOneTimeLowResolution();        
+  void                                sendOneTimeHighResolution();       
+  void                                sendOneTimeHighResolution2();
+  void                                sendContinuousLowResolution();
+  void                                sendContinuousHighResolution();
+  void                                sendContinuousHighResolution2();
+  void                                sendPowerOn();
+  void                                sendPowerDown();
+  void                                reset();
+  void                                setResolutionFactor(float RF = 1.2f);
+  HMS_BH17XX_StatusTypeDef            writeMTReg(uint8_t MTreg);
+  HMS_BH17XX_StatusTypeDef            setMTreg(uint8_t mtreg = HMS_BH17XX_MTREG_DEFAULT);
+  uint8_t                             getDeviceAddress()    const                           { return deviceAddress;   }
+  HMS_BH17XX_Mode                     getMode()             const                           { return measurementMode; }
+  uint8_t                             getMeasurmentTime()   const                           { return MeasurementTime; }
+  float                               getResolutionFactor() const                           { return resolutionFactor;}
+  
 private:
-  byte BH1750_I2CADDR;
-  byte BH1750_MTreg = (byte)BH1750_DEFAULT_MTREG;
-  // Correction factor used to calculate lux. Typical value is 1.2 but can
-  // range from 0.96 to 1.44. See the data sheet (p.2, Measurement Accuracy)
-  // for more information.
-  const float BH1750_CONV_FACTOR = 1.2;
-  Mode BH1750_MODE = UNCONFIGURED;
-  TwoWire* I2C;
-  unsigned long lastReadTimestamp;
+
+  uint16_t                  rawData;
+  uint8_t                   readData[2];
+  uint8_t                   deviceAddress;
+  uint8_t                   measurementCommand;
+  uint8_t                   powerOnCommand;
+  uint8_t                   powerDownCommand;
+  uint8_t                   MeasurementTime;
+  float                     lux;
+  float                     resolutionFactor;
+  HMS_BH17XX_SensorType     Type;
+  HMS_BH17XX_Mode           measurementMode;
+
+  #if defined(HMS_BH17XX_PLATFORM_ARDUINO)
+    TwoWire *bh17xx_wire = NULL;
+  #elif defined(HMS_BH17XX_PLATFORM_ESP_IDF)
+    i2c_port_t bh17xx_i2c_port;
+  #elif defined(HMS_BH17XX_PLATFORM_ZEPHYR)
+    struct device *bh17xx_i2c_dev;
+  #elif defined(HMS_BH17XX_PLATFORM_STM32_HAL)
+    I2C_HandleTypeDef *bh17xx_hi2c;
+    HAL_StatusTypeDef  status;
+  #endif
+  
+  HMS_BH17XX_StatusTypeDef init();
+  void                     setDefaultValues();
+  void                     bh17Delay(uint32_t ms);
 };
+
 
 #endif // HMS_BH17XX_DRIVER_H
