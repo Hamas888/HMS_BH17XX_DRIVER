@@ -76,7 +76,7 @@ HMS_BH17XX_StatusTypeDef HMS_BH17XX::init() {
     if(writeMTReg(120) != HMS_BH17XX_OK){
         return HMS_BH17XX_ERROR;
     }
-    mpuDelay(200);
+    bh17Delay(200);
     if(sendCommand(measurementCommand) == HMS_BH17XX_OK){     // here mode is set by the defaultvalues function
         bh17Delay(200);
         readLightLevel();
@@ -93,9 +93,6 @@ float HMS_BH17XX::readLightLevel()
     {
         rawData = (readData[0] << 8) | readData[1];
         lux = (float)rawData / resolutionFactor; 
-        #ifdef HMS_BH17XX_DEBUG_ENABLED
-            bh17xxLogger.debug("Light Level: %.2f lx", lux);
-        #endif
         return lux;
     }
     else
@@ -282,4 +279,42 @@ void HMS_BH17XX::reset(){
 }
 void HMS_BH17XX::setResolutionFactor(float RF){
     resolutionFactor = RF;
+}
+
+float HMS_BH17XX::ReadSensor(){ 
+    const int numSamples = 10;
+    float sumLux = 0;
+    for (int i = 0; i < numSamples; i++)
+        {
+        if (sendCommand(HMS_BH17XX_CMD_ONE_TIME_H_RES_MODE2) == HMS_BH17XX_OK)
+        {
+            bh17Delay(200); 
+            float currentLux = readLightLevel();
+
+            if (currentLux >= 0)
+            {
+                sumLux += currentLux;
+            }
+            else
+            {
+                #ifdef HMS_BH17XX_DEBUG_ENABLED
+                    bh17xxLogger->error("Reading %d failed", i);
+                #endif
+            }
+        }
+        else
+        {
+            #ifdef HMS_BH17XX_DEBUG_ENABLED
+                bh17xxLogger->error("Failed to send command on iteration %d", i);
+            #endif
+        }
+
+        bh17Delay(50); 
+    }
+
+    lux = sumLux / numSamples;;
+    #ifdef HMS_BH17XX_LOGGER_ENABLED
+        bh17xxLogger->info("Average Light Level after %d samples: %.2f lux", numSamples, lux);
+    #endif
+    return lux;
 }
