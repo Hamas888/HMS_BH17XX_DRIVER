@@ -105,6 +105,7 @@ class HMS_BH17XX {
         #endif
 
   float                               readLightLevel();
+  float                               ReadSensor();
   HMS_BH17XX_StatusTypeDef            sendCommand(uint8_t command);
   void                                setMode(HMS_BH17XX_Mode mode);
   void                                sendOneTimeLowResolution();        
